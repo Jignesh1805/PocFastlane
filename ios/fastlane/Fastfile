@@ -38,4 +38,19 @@ platform :ios do
     commit_version_bump(message: "Version bump", xcodeproj: "fastlane.xcodeproj")
     push_to_git_remote
   end
+
+  desc "Deploy app for internal sharing"
+  lane :deploy_internal do
+    ENV["ENVFILE"] = "DEV"
+    cocoapods(
+      clean_install: true
+    )
+    increment_build_number
+    cert
+    sigh
+    gym(scheme: "DemoApp")
+    upload_to_testflight
+    git_commit(path: ["./DemoApp/Info.plist", "./DemoAppTests/Info.plist", "./DemoApp.xcodeproj"], message: "iOS Build Number Bump to: " + get_build_number + " for version: " + get_version_number)
+    push_to_git_remote
+  end
 end
